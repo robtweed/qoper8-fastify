@@ -1,0 +1,29 @@
+{
+  "name": "qoper8-fastify",
+  "version": "0.0.1",
+  "description": "QOper8 Plugin for Fastify",
+  "type": "module",
+  "main": "/src/qoper8-fastify-plugin.mjs",
+  "exports": {
+    ".": "/src/qoper8-fastify-plugin.mjs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/robtweed/qoper8-fastify.git"
+  },
+  "author": "Rob Tweed, M/Gateway Developments Ltd",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "fastify": "latest",
+    "fastify-plugin": "latest",
+    "qoper8-cp": "latest",
+    "qoper8-wt": "latest"
+  },
+  "bugs": {
+    "url": "https://github.com/robtweed/qoper8-fastify/issues"
+  },
+  "homepage": "https://github.com/robtweed/qoper8-fastify#readme"
+}
