@@ -1,5 +1,5 @@
 import Fastify from 'fastify';
-import QOper8 from './qoper8-fastify-plugin.mjs';
+import QOper8 from 'qoper8-fastify';
 import config from './configure.mjs';
 import routes from './routes.mjs';
 import handlers from './handlers.mjs';
@@ -23,3 +23,4 @@ await fastify.listen({ port: 3000, host: '0.0.0.0' }, function (err, address) {
     process.exit(1)
   }
 })
+

@@ -8,7 +8,7 @@ function configure (fastify, opts, done) {
   // YottaDB API Connection
 
   fastify.qoper8.setOnStartupModule({
-    module: './glsdb-qoper8-fastify-startup.mjs',
+    module: 'glsdb/qoper8-fastify',
     arguments: {
       type: 'yottadb',
       options: {
@@ -29,7 +29,7 @@ function configure (fastify, opts, done) {
   // YottaDB Network Connection
 
   fastify.qoper8.setOnStartupModule({
-    module: './glsdb-qoper8-fastify-startup.mjs',
+    module: 'glsdb/qoper8-fastify',
     arguments: {
       type: 'yottadb',
       options: {
@@ -48,7 +48,7 @@ function configure (fastify, opts, done) {
   // IRIS API Connection
 
   fastify.qoper8.setOnStartupModule({
-    module: './glsdb-qoper8-fastify-startup.mjs',
+    module: 'glsdb/qoper8-fastify',
     arguments: {
       type: 'iris',
       options: {
@@ -67,7 +67,7 @@ function configure (fastify, opts, done) {
   // IRIS Network Connection
 
   fastify.qoper8.setOnStartupModule({
-    module: './glsdb-qoper8-fastify-startup.mjs',
+    module: 'glsdb/qoper8-fastify',
     arguments: {
       type: 'iris',
       options: {
