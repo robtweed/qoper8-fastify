@@ -24,7 +24,7 @@ The *QOper8-wt* and *QOper8-cp* Modules allow you to easily and simply maintain 
 
 Notes:
 
-- *qoper8-fastify* requires Node.js v18 or later (a requirement of *qoper8-wt* and *qoper8-cp*);
+- *qoper8-fastify* requires Node.js v16 or later (a requirement of *qoper8-wt* and *qoper8-cp*);
 - Installing *qoper8-fastify* will also install the following as dependencies:
 
   - fastify
