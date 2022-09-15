@@ -23,7 +23,7 @@
  |  limitations under the License.                                           |
  ----------------------------------------------------------------------------
 
-12 September 2022
+15 September 2022
 
 */
 
@@ -68,12 +68,9 @@ async function QOper8_Plugin (fastify, options) {
     };
   });
 
-  fastify.decorate('setHandler', function(name, request) {
-    request.qRequest.handler = name;
-  });
-
-  fastify.decorate('registerHandler', function(name, modulePath) {
+  fastify.decorate('setHandler', function(name, modulePath, request) {
     fastify.qoper8.handlersByMessageType.set(name, {module: modulePath});
+    request.qRequest.handler = name;
   });
 
   fastify.decorate('setPoolSize', function(poolSize) {
@@ -106,4 +103,4 @@ async function QOper8_Plugin (fastify, options) {
 
 };
 
-export default fastifyPlugin(QOper8_Plugin)
+export default fastifyPlugin(QOper8_Plugin);
