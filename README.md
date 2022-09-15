@@ -14,7 +14,7 @@ Google Group for discussions, support, advice etc: [http://groups.google.co.uk/g
 [*QOper8-wt*](https://github.com/robtweed/qoper8-wt) and [QOper8-cp](https://github.com/robtweed/qoper8-cp) Modules 
 with Fastify.
 
-The *QOper8-wt* and *QOper8-cp* Modules allow you to easily and simply maintain a pool of Node.js Worker Threads or Child Processes respectively.  When using these modules, messages are placed in a queue, from where they are dispatched to an available Worker Thread or Child Process and handled by a module of your choice.  This queue-based architecture creates a highly-scalable architecture for handling large amount of messages, particularly if some require significant CPU resources, since the load imposed by handling the messages is off-loaded to a Worker Thread or Child Process.  An interesting and often desirable aspect of these Modules is that each Worker Thread or Child Process only handles a single message at a time, meaning that during their processing, Node.js concurrency is not an issue.
+The *QOper8-wt* and *QOper8-cp* Modules allow you to easily and simply maintain a pool of Node.js Worker Threads or Child Processes respectively.  When using these modules, messages are placed in a queue, from where they are dispatched to an available Worker Thread or Child Process and handled by a module of your choice.  This queue-based architecture creates a highly-scalable architecture for handling a large amount of messages, particularly if some require significant CPU resources, since the load imposed by handling the messages is off-loaded to a Worker Thread or Child Process.  An interesting and often desirable aspect of these Modules is that each Worker Thread or Child Process only handles a single message at a time, meaning that during their processing, Node.js concurrency is not an issue.
 
 *qoper8-fastify* integrates these modules with Fastify, with the result that every incoming HTTP request received by Fastify is automatically repackaged and forwarded as a message to a Worker Thread or Child Process, where it is handled by a module of your choice, based on the signature of the incoming request.
 
@@ -57,7 +57,7 @@ Notes:
         const options = {
           mode: 'child_process',    // defaults to 'worker_thread' if not specified
           logging: true,            // defaults to false if not specified
-          poolsize: 3               // up to 3 Workers will be used, depending on activity levels 
+          poolSize: 3               // we will use up to 3 Workers, depending on activity levels 
         }
 
 
@@ -74,7 +74,7 @@ Full details of the startup options for QOper8 modules are available at:
 
         fastify.register(QOper8, options);
 
-or, for a default silent implementation using Worker Threads:
+or, for a default silent implementation using a single Worker Thread:
 
 
         fastify.register(QOper8);
@@ -97,7 +97,7 @@ Normally, with Fastify, you do this within your Route specifications.  You'll st
 
 Registering the *qoper8-fastify* module adds a method - *setHandler()* - to Fastify.  This takes three arguments:
 
-- *type*: a QOper8 *type* name for the message that will be generated for these incoming requests.  The name is up to you to define, but should be unique for this particular incoming route.
+- *type*: a QOper8 *type* name for the message that will be generated for these incoming requests.  The name is up to you to define, but should be unique to this particular incoming route.
 
 - *module_path*: the path to your actual message handler module - ie the module that will be used to handle incoming requests for this route within a Worker.  The path is for you to determine, but it must be accessible to the *QOper8* module, and as such it is recommened that it is specified relative to the current working directory.
 
@@ -120,7 +120,7 @@ The export must be to *{handler}*.
 
 For example:
 
-        let handler = function(messageObj, finished) {
+        const handler = function(messageObj, finished) {
 
           // process the incoming message object
 
