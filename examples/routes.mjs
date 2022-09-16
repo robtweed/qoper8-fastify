@@ -1,7 +1,7 @@
 async function routes (fastify, options, done) {
 
   fastify.get('/helloworld', async (request, reply) => {
-    fastify.setHandler('getHelloWorld', request);
+    fastify.setHandler('getHelloWorld', './handlers/getHelloWorld.mjs', request);
     return true;
   })
 

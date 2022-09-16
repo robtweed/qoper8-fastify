@@ -2,9 +2,6 @@ import fastifyPlugin from 'fastify-plugin';
 
 function configure (fastify, opts, done) {
 
-  fastify.qoper8.setPoolSize(2);
-  fastify.qoper8.logging = true;
-
   // YottaDB API Connection
 
   fastify.qoper8.setOnStartupModule({
