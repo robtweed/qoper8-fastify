@@ -23,11 +23,12 @@
  |  limitations under the License.                                           |
  ----------------------------------------------------------------------------
 
-15 September 2022
+28 September 2022
 
 */
 
 import fastifyPlugin from 'fastify-plugin';
+import crypto from 'crypto';
 
 async function QOper8_Plugin (fastify, options) {
 
@@ -69,6 +70,12 @@ async function QOper8_Plugin (fastify, options) {
   });
 
   fastify.decorate('setHandler', function(name, modulePath, request) {
+    // if no name specified, generate one from the modulePath
+    if (arguments.length === 2) {
+      request = modulePath;
+      modulePath = name;
+      name = crypto.createHash('sha1').update(modulePath).digest('hex');
+    }
     fastify.qoper8.handlersByMessageType.set(name, {module: modulePath});
     request.qRequest.handler = name;
   });

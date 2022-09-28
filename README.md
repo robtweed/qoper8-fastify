@@ -90,21 +90,19 @@ Normally, with Fastify, you do this within your Route specifications.  You'll st
 
 
         fastify.get('/helloworld', async (request, reply) => {
-          fastify.setHandler('getHelloWorld', './handlers/getHelloWorld.mjs', request);
+          fastify.setHandler('./handlers/getHelloWorld.mjs', request);
           return true;
         })
 
 
-Registering the *qoper8-fastify* module adds a method - *setHandler()* - to Fastify.  This takes three arguments:
-
-- *type*: a QOper8 *type* name for the message that will be generated for these incoming requests.  The name is up to you to define, but should be unique to this particular incoming route.
+Registering the *qoper8-fastify* module adds a method - *setHandler()* - to Fastify.  This takes two arguments:
 
 - *module_path*: the path to your actual message handler module - ie the module that will be used to handle incoming requests for this route within a Worker.  The path is for you to determine, but it must be accessible to the *QOper8* module, and as such it is recommened that it is specified relative to the current working directory.
 
 - *request*: the incoming Fastify request object (which *qoper8-fastify* will re-package into a message).
 
 
-So in the example above, any *GET /helloworld* requests will be repackaged as a QOper8 message of type *getHelloWorld* and handled by a module that you've created at the path *'./handlers/getHelloWorld.mjs'*.
+So in the example above, any *GET /helloworld* requests will be repackaged as a QOper8 message that will be handled by a module that you've created at the path *'./handlers/getHelloWorld.mjs'*.
 
 Note that *qoper8-fastify* automatically replaces the Fastify reply payload with whatever you return from your message handler (see below).
 
@@ -163,12 +161,12 @@ The *messageObj* argument contains the re-packaged incoming HTTP request.  It is
           }
         }
 
-where *message_type* is the message type name you assigned to this particular route (eg *getHelloWorld* in the earlier example).
+where *message_type* is a message type name created automatically by *qoper8-fastify* for this particular route.
 
 For example:
 
         {
-          "type": "getHelloWorld",
+          "type": "f9862f0ed8f093afb7f6d2165aa63a69dda262da",
           "data": {
             "method": "GET",
             "query": {},
@@ -310,7 +308,7 @@ Define Routes and the Associated Worker Message Handler Methods:
         async function routes (fastify, options, done) {
 
           fastify.get('/helloworld', async (request, reply) => {
-            fastify.setHandler('getHelloWorld', './handlers/getHelloWorld.mjs', request);
+            fastify.setHandler('./handlers/getHelloWorld.mjs', request);
             return true;
           })
 
