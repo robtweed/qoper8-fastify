@@ -1,6 +1,6 @@
 {
   "name": "qoper8-fastify",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "QOper8 Plugin for Fastify",
   "type": "module",
   "main": "./src/qoper8-fastify-plugin.mjs",

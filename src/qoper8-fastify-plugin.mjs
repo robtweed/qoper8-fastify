@@ -2,7 +2,7 @@
  ----------------------------------------------------------------------------
  | QOper8-Fastify-Plugin: Fastify Plugin                                     |
  |                                                                           |
- | Copyright (c) 2022 M/Gateway Developments Ltd,                            |
+ | Copyright (c) 2022-23 M/Gateway Developments Ltd,                         |
  | Redhill, Surrey UK.                                                       |
  | All rights reserved.                                                      |
  |                                                                           |
@@ -23,7 +23,7 @@
  |  limitations under the License.                                           |
  ----------------------------------------------------------------------------
 
-28 September 2022
+19 January 2023
 
 */
 
@@ -69,6 +69,11 @@ async function QOper8_Plugin (fastify, options) {
     };
   });
 
+  fastify.decorate('errorResponse', function(err, reply) {
+    let error = '{error:"' + err + '"}';
+    reply.code(404).type('application/json').send(error);
+  });
+
   fastify.decorate('setHandler', function(name, modulePath, request) {
     // if no name specified, generate one from the modulePath
     if (arguments.length === 2) {
@@ -88,7 +93,9 @@ async function QOper8_Plugin (fastify, options) {
 
   fastify.addHook('onSend', async (request, reply, payload) => {
     if (payload.startsWith('{error:')) {
-      return payload;
+      let err = payload.split('{error:')[1];
+      err = err.slice(0,-1);
+      return '{"error":' + err + '}';
     }
 
     let res = await fastify.qoper8.send({
