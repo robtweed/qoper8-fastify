@@ -1,6 +1,6 @@
 {
   "name": "qoper8-fastify",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "QOper8 Plugin for Fastify",
   "type": "module",
   "main": "./src/qoper8-fastify-plugin.mjs",
@@ -17,7 +17,7 @@
     "type": "git",
     "url": "git+https://github.com/robtweed/qoper8-fastify.git"
   },
-  "author": "Rob Tweed, M/Gateway Developments Ltd",
+  "author": "Rob Tweed, MGateway Ltd",
   "license": "Apache-2.0",
   "dependencies": {
     "fastify": "latest",
