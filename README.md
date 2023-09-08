@@ -38,7 +38,14 @@ You can have a mixture of:
 
 ## Installing *qoper8-fastify*
 
+  Node.js:
+
         npm install qoper8-fastify
+
+
+  Bun.js:
+
+        bun install qoper8-fastify
 
 Notes:
 
