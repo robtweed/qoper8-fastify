@@ -113,7 +113,7 @@ Full details of the startup options for QOper8 modules are available at:
 
         fastify.register(QOper8, options);
 
-or, for a default silent implementation using a single Worker Thread:
+or, for a default silent implementation using a single Worker Thread (Node.js) or WebWorker (Bun.js):
 
 
         fastify.register(QOper8);
@@ -325,7 +325,7 @@ For full details about QOper8 Worker Startup Modules, see the relevant documenta
 
 - [*qoper8-cp* (Child Processes)](https://github.com/robtweed/qoper8-cp#optional-child-process-initialisationcustomisation)
 
-- [*qoper8-ww* (WebWorkers)](https://github.com/robtweed/QOper8#optional-child-process-initialisationcustomisation)
+- [*qoper8-ww* (WebWorkers)](https://github.com/robtweed/QOper8#optional-webworker-initialisationcustomisation)
 
 
 ----
