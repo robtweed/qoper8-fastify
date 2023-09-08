@@ -23,7 +23,7 @@
  |  limitations under the License.                                           |
  ----------------------------------------------------------------------------
 
-19 January 2023
+6 September 2023
 
 */
 
@@ -33,18 +33,33 @@ import crypto from 'crypto';
 async function QOper8_Plugin (fastify, options) {
 
   if (!options || typeof options !== 'object') return;
-  let mode = options.mode || 'worker_thread';
   let qmodule;
-  if (mode === 'child_process') {
-    qmodule = await import('qoper8-cp');
+  if (typeof Bun !== 'undefined') {
+    qmodule = await import('qoper8-ww');
   }
   else {
-    qmodule = await import('qoper8-wt');
+    let mode = options.mode || 'worker_thread';
+    if (mode === 'child_process') {
+      qmodule = await import('qoper8-cp');
+    }
+    else {
+      qmodule = await import('qoper8-wt');
+    }
   }
   delete options.mode;
 
   let QOper8 = qmodule.QOper8;
   const qoper8 = new QOper8(options);
+
+  qoper8.routeToName = new Map();
+  for (let route of options.workerHandlersByRoute) {
+    let name = crypto.createHash('sha1').update(route.url).digest('hex');
+    qoper8.handlersByMessageType.set(name, {module: route.handlerPath});
+    qoper8.routeToName.set(route.url, name);
+    fastify[route.method](route.url, async (request, reply) => {
+      return true;
+    });
+  }
 
   qoper8.on('stop', function() {
     fastify.close(function() {
@@ -52,9 +67,7 @@ async function QOper8_Plugin (fastify, options) {
     });
   });
 
-  fastify.decorate('qoper8', qoper8);
-
-  fastify.decorate('prepareRequest', function(request) {
+  function prepareRequest(request) {
     return  {
       method: request.method,
       query: request.query,
@@ -65,50 +78,51 @@ async function QOper8_Plugin (fastify, options) {
       ips: request.ips,
       hostname: request.hostname,
       protocol: request.protocol,
-      url: request.url
+      url: request.url,
+      routerPath: request.routerPath
     };
-  });
+  }
 
   fastify.decorate('errorResponse', function(err, reply) {
     let error = '{error:"' + err + '"}';
     reply.code(404).type('application/json').send(error);
   });
 
-  fastify.decorate('setHandler', function(name, modulePath, request) {
-    // if no name specified, generate one from the modulePath
-    if (arguments.length === 2) {
-      request = modulePath;
-      modulePath = name;
-      name = crypto.createHash('sha1').update(modulePath).digest('hex');
-    }
-    fastify.qoper8.handlersByMessageType.set(name, {module: modulePath});
-    request.qRequest.handler = name;
-  });
-
   fastify.decorate('setPoolSize', function(poolSize) {
-    fastify.qoper8.setPoolSize(poolSize);
+    qoper8.setPoolSize(poolSize);
   });
 
   fastify.decorateRequest('qRequest', '');
 
   fastify.addHook('onSend', async (request, reply, payload) => {
-    if (payload.startsWith('{error:')) {
-      let err = payload.split('{error:')[1];
-      err = err.slice(0,-1);
-      return '{"error":' + err + '}';
+
+    if (!qoper8.routeToName.get(request.routerPath)) {
+      return payload;
     }
 
-    let res = await fastify.qoper8.send({
-      type: request.qRequest.handler,
+    let res = await qoper8.send({
+      type: qoper8.routeToName.get(request.routerPath),
       data: request.qRequest
     });
     delete res.qoper8;
+
+    if (res.error) {
+      reply.code(res.errorCode || 400);
+      delete res.errorCode;
+    }
+
+    if (fastify.interceptQOper8Response) {
+      res = fastify.interceptQOper8Response(res, request, reply);
+    }
+
     return JSON.stringify(res);
   })
 
   fastify.addHook('onRequest', function(request, reply, done) {
-    request.qRequest = fastify.prepareRequest(request);
-    done()
+    if (qoper8.routeToName.get(request.routerPath)) {
+      request.qRequest = prepareRequest(request);
+    }
+    done();
   });
 
   fastify.addHook('onClose', async function(instance) {

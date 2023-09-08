@@ -1,6 +1,6 @@
 {
   "name": "qoper8-fastify",
-  "version": "0.0.9",
+  "version": "0.1.1",
   "description": "QOper8 Plugin for Fastify",
   "type": "module",
   "main": "./src/qoper8-fastify-plugin.mjs",
@@ -23,7 +23,8 @@
     "fastify": "latest",
     "fastify-plugin": "latest",
     "qoper8-cp": "latest",
-    "qoper8-wt": "latest"
+    "qoper8-wt": "latest",
+    "qoper8-ww": "latest"
   },
   "bugs": {
     "url": "https://github.com/robtweed/qoper8-fastify/issues"
