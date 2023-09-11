@@ -23,12 +23,13 @@
  |  limitations under the License.                                           |
  ----------------------------------------------------------------------------
 
-6 September 2023
+8 September 2023
 
 */
 
 import fastifyPlugin from 'fastify-plugin';
 import crypto from 'crypto';
+import path from 'path';
 
 async function QOper8_Plugin (fastify, options) {
 
@@ -48,13 +49,22 @@ async function QOper8_Plugin (fastify, options) {
   }
   delete options.mode;
 
+  if (typeof Bun === 'undefined' && options.onStartup && options.onStartup.module) {
+    let mpath = path.resolve(process.cwd(), options.onStartup.module);
+    options.onStartup.module = mpath;
+  }
+
   let QOper8 = qmodule.QOper8;
   const qoper8 = new QOper8(options);
 
   qoper8.routeToName = new Map();
   for (let route of options.workerHandlersByRoute) {
     let name = crypto.createHash('sha1').update(route.url).digest('hex');
-    qoper8.handlersByMessageType.set(name, {module: route.handlerPath});
+    let mpath = route.handlerPath;
+    if (typeof Bun === 'undefined') {
+      mpath = path.resolve(process.cwd(), route.handlerPath);
+    }
+    qoper8.handlersByMessageType.set(name, {module: mpath});
     qoper8.routeToName.set(route.url, name);
     fastify[route.method](route.url, async (request, reply) => {
       return true;
