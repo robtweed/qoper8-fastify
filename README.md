@@ -261,7 +261,8 @@ The *messageObj* argument contains the re-packaged incoming HTTP request.  It is
             ips: request.ips,
             hostname: request.hostname,
             protocol: request.protocol,
-            url: request.url
+            url: request.url,
+            routerPath: request.routeOptions.config.url
           }
         }
 
@@ -284,6 +285,7 @@ For example:
             "hostname": "127.0.0.1:3000",
             "protocol": "http",
             "url": "/helloworld",
+            "routerPath": "/helloworld"
         }
 
 

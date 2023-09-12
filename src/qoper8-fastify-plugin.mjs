@@ -23,7 +23,7 @@
  |  limitations under the License.                                           |
  ----------------------------------------------------------------------------
 
-8 September 2023
+12 September 2023
 
 */
 
@@ -89,7 +89,8 @@ async function QOper8_Plugin (fastify, options) {
       hostname: request.hostname,
       protocol: request.protocol,
       url: request.url,
-      routerPath: request.routerPath
+      //routerPath: request.routerPath
+      routerPath: request.routeOptions.config.url
     };
   }
 
@@ -106,12 +107,12 @@ async function QOper8_Plugin (fastify, options) {
 
   fastify.addHook('onSend', async (request, reply, payload) => {
 
-    if (!qoper8.routeToName.get(request.routerPath)) {
+    if (!qoper8.routeToName.get(request.routeOptions.config.url)) {
       return payload;
     }
 
     let res = await qoper8.send({
-      type: qoper8.routeToName.get(request.routerPath),
+      type: qoper8.routeToName.get(request.routeOptions.config.url),
       data: request.qRequest
     });
     delete res.qoper8;
@@ -129,7 +130,7 @@ async function QOper8_Plugin (fastify, options) {
   })
 
   fastify.addHook('onRequest', function(request, reply, done) {
-    if (qoper8.routeToName.get(request.routerPath)) {
+    if (qoper8.routeToName.get(request.routeOptions.config.url)) {
       request.qRequest = prepareRequest(request);
     }
     done();
