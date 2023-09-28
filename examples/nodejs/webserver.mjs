@@ -8,6 +8,7 @@ const fastify = Fastify({
 const options = {
   logging: true,
   poolSize: 2,
+  exitOnStop: true,
   workerHandlersByRoute: [
     {
       method: 'get',

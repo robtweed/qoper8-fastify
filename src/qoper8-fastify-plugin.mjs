@@ -23,25 +23,25 @@
  |  limitations under the License.                                           |
  ----------------------------------------------------------------------------
 
-12 September 2023
+25 September 2023
 
 */
 
 import fastifyPlugin from 'fastify-plugin';
 import crypto from 'crypto';
-import path from 'path';
 
 async function QOper8_Plugin (fastify, options) {
 
   if (!options || typeof options !== 'object') return;
   let qmodule;
-  if (typeof Bun !== 'undefined') {
-    qmodule = await import('qoper8-ww');
+
+  let mode = options.mode || 'worker_thread';
+  if (mode === 'child_process') {
+    qmodule = await import('qoper8-cp');
   }
   else {
-    let mode = options.mode || 'worker_thread';
-    if (mode === 'child_process') {
-      qmodule = await import('qoper8-cp');
+    if (typeof Bun !== 'undefined') {
+      qmodule = await import('qoper8-ww');
     }
     else {
       qmodule = await import('qoper8-wt');
@@ -49,96 +49,67 @@ async function QOper8_Plugin (fastify, options) {
   }
   delete options.mode;
 
-  if (typeof Bun === 'undefined' && options.onStartup && options.onStartup.module) {
-    let mpath = path.resolve(process.cwd(), options.onStartup.module);
-    options.onStartup.module = mpath;
-  }
-
   let QOper8 = qmodule.QOper8;
   const qoper8 = new QOper8(options);
 
   qoper8.routeToName = new Map();
   for (let route of options.workerHandlersByRoute) {
     let name = crypto.createHash('sha1').update(route.url).digest('hex');
-    let mpath = route.handlerPath;
-    if (typeof Bun === 'undefined') {
-      mpath = path.resolve(process.cwd(), route.handlerPath);
-    }
-    qoper8.handlersByMessageType.set(name, {module: mpath});
+    qoper8.handlersByMessageType.set(name, {module: route.handlerPath});
     qoper8.routeToName.set(route.url, name);
     fastify[route.method](route.url, async (request, reply) => {
-      return true;
+      let qRequest = {
+        method: request.method,
+        query: request.query,
+        body: request.body,
+        params: request.params,
+        headers: request.headers,
+        ip: request.ip,
+        ips: request.ips,
+        hostname: request.hostname,
+        protocol: request.protocol,
+        url: request.url,
+        routerPath: route.url
+      };
+
+      qoper8.message({
+        type: name,
+        data: qRequest
+      }, function(response, workerId) {
+
+        let res = structuredClone(response);
+        delete res.qoper8;
+
+        if (res.error) {
+          let status = 400;
+          if (res.errorCode) {
+            status = res.errorCode;
+            delete res.errorCode;
+          }
+          reply.code(status).type('application/json').send(res);
+        }
+        else {
+          let options;
+          if (res.http_response) {
+            if (res.http_response.statusCode) {
+              reply.code(res.http_response.statusCode);
+            }
+            if (res.http_response.headers) {
+              reply.headers(res.http_response.headers);
+            }
+            delete res.http_response;
+          }
+          reply.send(res);
+        }
+      });
+
+      await reply;
+
     });
   }
 
-  qoper8.on('stop', function() {
-    fastify.close(function() {
-      console.log('Fastify closed');
-    });
-  });
+  fastify.decorate('qoper8', qoper8);
 
-  function prepareRequest(request) {
-    return  {
-      method: request.method,
-      query: request.query,
-      body: request.body,
-      params: request.params,
-      headers: request.headers,
-      ip: request.ip,
-      ips: request.ips,
-      hostname: request.hostname,
-      protocol: request.protocol,
-      url: request.url,
-      //routerPath: request.routerPath
-      routerPath: request.routeOptions.config.url
-    };
-  }
-
-  fastify.decorate('errorResponse', function(err, reply) {
-    let error = '{error:"' + err + '"}';
-    reply.code(404).type('application/json').send(error);
-  });
-
-  fastify.decorate('setPoolSize', function(poolSize) {
-    qoper8.setPoolSize(poolSize);
-  });
-
-  fastify.decorateRequest('qRequest', '');
-
-  fastify.addHook('onSend', async (request, reply, payload) => {
-
-    if (!qoper8.routeToName.get(request.routeOptions.config.url)) {
-      return payload;
-    }
-
-    let res = await qoper8.send({
-      type: qoper8.routeToName.get(request.routeOptions.config.url),
-      data: request.qRequest
-    });
-    delete res.qoper8;
-
-    if (res.error) {
-      reply.code(res.errorCode || 400);
-      delete res.errorCode;
-    }
-
-    if (fastify.interceptQOper8Response) {
-      res = fastify.interceptQOper8Response(res, request, reply);
-    }
-
-    return JSON.stringify(res);
-  })
-
-  fastify.addHook('onRequest', function(request, reply, done) {
-    if (qoper8.routeToName.get(request.routeOptions.config.url)) {
-      request.qRequest = prepareRequest(request);
-    }
-    done();
-  });
-
-  fastify.addHook('onClose', async function(instance) {
-    //console.log('*** Fastify onclose triggered! ***');
-  });
 
 };
 

@@ -15,11 +15,12 @@ Google Group for discussions, support, advice etc: [http://groups.google.co.uk/g
 [*QOper8-wt*](https://github.com/robtweed/qoper8-wt) and [QOper8-cp](https://github.com/robtweed/qoper8-cp) Modules 
 with Fastify.  
 
-Note that Bun.js will always use the WebWorker version: (QOper8-ww).  If you're using Node.js, you can choose between the *QOper8-wt* and *QOper8-cp* versions.
+Note: 
 
-The *QOper8-wt* and *QOper8-cp* Modules allow you to easily and simply maintain a pool of Node.js Worker Threads or Child Processes respectively.  
+- Bun.js can use either the WebWorker version (*QOper8-ww*) or the Child Process version (*QOper8-cp*),
 
-The *QOper8-ww* Module allows you to easily and simply maintain a pool of Bun.js WebWorkers.
+- If you're using Node.js, you can choose between the *QOper8-wt* and *QOper8-cp* versions.
+
 
 All three modules behave in essentially the same way: when using these modules, 
 messages are placed in a queue, from where they are dispatched to an available
@@ -74,7 +75,9 @@ Notes:
         });
 
 
-- Next, if you are using Node.js, determine whether you wish to use Worker Threads or Child Processes for handling incoming HTTP Requests.  Worker Threads are the default.  
+- Next, if you are using Node.js, determine whether you wish to use Worker Threads or Child Processes for handling incoming HTTP Requests.  Worker Threads are the default.
+
+  If you are using Bun, decide whether you want to use WebWorkers or Child Processes.  WebWorkers are the default.
 
 - You should also determine any QOper8 startup options, such as:
 
@@ -88,14 +91,17 @@ Notes:
         const options = {
           mode: 'child_process',    // defaults to 'worker_thread' if not specified
           logging: true,            // defaults to false if not specified
-          poolSize: 3               // we will use up to 3 Workers, depending on activity levels 
+          poolSize: 3,              // we will use up to 3 Workers, depending on activity levels
+          exitOnStop: true          // ensures that the process exits when everything is stopped
         }
 
     Bun.js:
 
         const options = {
+          mode: 'child_process',    // defaults to 'webworker' if not specified
           logging: true,            // defaults to false if not specified
-          poolSize: 3               // we will use up to 3 Workers, depending on activity levels 
+          poolSize: 3,              // we will use up to 3 Workers, depending on activity levels 
+          exitOnStop: true          // ensures that the process exits when everything is stopped
         }
 
 
@@ -137,12 +143,12 @@ For example, suppose you want the API -  *GET /helloworld* - to be handled in a 
 module named *helloworld.mjs* (or *helloworld.js if you are using Bun.js), you would change the
 *options* object to:
 
-  Node.js:
 
         const options = {
           mode: 'child_process',
           logging: true,
           poolSize: 3,
+          exitOnStop: true,
           workerHandlersByRoute: [
             {
               method: 'get',
@@ -151,21 +157,6 @@ module named *helloworld.mjs* (or *helloworld.js if you are using Bun.js), you w
             }
           ]
         }
-
-  Bun.js:
-
-        const options = {
-          logging: true,
-          poolSize: 3,
-          workerHandlersByRoute: [
-            {
-              method: 'get',
-              url: '/helloworld',
-              handlerPath: 'helloWorld.js'
-            }
-          ]
-        }
-
 
 
 As a result of the steps shown above, the *qoper8-fastify* PlugIn will automatically route all incoming
@@ -350,6 +341,7 @@ For full details about QOper8 Worker Startup Modules, see the relevant documenta
         const options = {
           poolSize: 2,
           logging: true,
+          exitOnStop: true,
           workerHandlersByRoute: [
             {
               method: 'get',
@@ -502,23 +494,22 @@ changes the HTTP status code of the response.
 
 ## Customising the Response
 
-*qoper8-fastify* also allows you to optionally intercept the response just before it is
-sent back to the client.  This gives you the opportunity to modify headers, set cookies, and/or add or amend 
-response content.
+*qoper8-fastify* also allows your handler methods to modify the HTTP Response Status and Headers.
 
-To do this, use *fastify.decorate()* to create the intercept method, eg:
+Within the *finished(responseObj)* response object, you simply add the reserved property *http_response*.  This
+is an object with two optional properties: *statusCode* and/or *headers*.  *headers* is an object specifying the header(s) that you want to add to the response.
 
-        fastify.decorate('interceptQOper8Response', function(res, request, reply) {
-          if (request.routerPath === '/token/:userId/:token') {
-            reply.header('set-cookie', 'foo');
+For example:
+
+        return finished({
+          hello: 'world',
+          http_response: {
+            statusCode: 201,
+            headers: {
+              authorization: 'xyz123'
+            }
           }
-          return res;
         });
-
-As you can see from this example, you have access to the response (from your Handler module), 
-the repackaged *request* object that was sent to the QOper8 Worker, and Fastify's *reply* object.
-
-Make sure you return a response object!
 
 
 
