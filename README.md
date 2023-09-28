@@ -74,6 +74,13 @@ Notes:
           logger: true
         });
 
+        await fastify.listen({ port: 3000, host: '0.0.0.0' }, function (err, address) {
+          if (err) {
+            fastify.log.error(err)
+            process.exit(1)
+          }
+        });
+
 
 - Next, if you are using Node.js, determine whether you wish to use Worker Threads or Child Processes for handling incoming HTTP Requests.  Worker Threads are the default.
 
@@ -118,11 +125,6 @@ Full details of the startup options for QOper8 modules are available at:
 
 
         fastify.register(QOper8, options);
-
-or, for a default silent implementation using a single Worker Thread (Node.js) or WebWorker (Bun.js):
-
-
-        fastify.register(QOper8);
 
 
 ## Handling Incoming Requests within QOper8 Workers
@@ -511,6 +513,41 @@ For example:
           }
         });
 
+
+## Handling QOper8 Events
+
+The *QOper8* modules emit a number of events that you may want to make use of within your application.
+
+*qoper8-fastify* decorates the *fastify* object with the *qoper8* instance, so you can use its *on()* method, for example, to see when/if workers are started and to see a count of requests handled by each worker:
+
+
+        fastify.ready(() => {
+          fastify.qoper8.on('workerStarted', function(id) {
+            console.log('worker ' + id + ' started');
+          });
+
+          let counts = {};
+
+          fastify.qoper8.on('replyReceived', function(res) {
+            let id = res.workerId;
+            if (!counts[id]) counts[id] = 0;
+            counts[id]++;
+          });
+
+          let countTimer = setInterval(() => {
+            console.log('messages handled:');
+            for (let id in counts) {
+              console.log(id + ': ' + counts[id]);
+            }
+            console.log('-----');
+          }, 20000);
+
+          fastify.qoper8.on('stop', () => {
+            // QOper8 has been stopped
+            clearInterval(countTimer);
+          });
+
+        });
 
 
 ## License
