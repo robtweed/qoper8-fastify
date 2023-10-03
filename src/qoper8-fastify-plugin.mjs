@@ -23,17 +23,12 @@
  |  limitations under the License.                                           |
  ----------------------------------------------------------------------------
 
-29 September 2023
+1 October 2023
 
 */
 
 import fastifyPlugin from 'fastify-plugin';
 import crypto from 'crypto';
-import path from 'path';
-import { fileURLToPath } from 'url';
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-let relPath = __dirname.split(process.cwd() + '/')[1];
 
 async function QOper8_Plugin (fastify, options) {
 
@@ -55,13 +50,6 @@ async function QOper8_Plugin (fastify, options) {
   delete options.mode;
 
   let QOper8 = qmodule.QOper8;
-
-  if (options.mgdbx) {
-    options.onStartup = {
-      module: relPath + '/mgdbx-worker-startup.mjs',
-      arguments: options.mgdbx
-    }
-  }
 
   const qoper8 = new QOper8(options);
 

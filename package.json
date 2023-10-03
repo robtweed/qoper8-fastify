@@ -1,6 +1,6 @@
 {
   "name": "qoper8-fastify",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "QOper8 Plugin for Fastify",
   "type": "module",
   "main": "./src/qoper8-fastify-plugin.mjs",
@@ -8,7 +8,7 @@
     ".": "./src/qoper8-fastify-plugin.mjs"
   },
   "engines" : {
-    "node" : ">=14.0.0"
+    "node" : ">=18.0.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
